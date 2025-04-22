@@ -58,7 +58,9 @@ public class Horse {
     }
 
     public void setConfidence(double newConfidence) {
-        this.confidence = newConfidence;
+        if (newConfidence >= 0 && newConfidence <= 1) {
+            this.confidence = newConfidence;
+        }
     }
 
     public void setSymbol(char newSymbol) {

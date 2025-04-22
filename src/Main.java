@@ -3,5 +3,9 @@
 public class Main {
     public static void main(String[] args) {
         Horse horse = new Horse('F', "test", 0.5);
+//        THIS IS NOT AVAILABLE, "ENCAPSULATION!!
+//        horse.name = "asdf";
+//        horse.setName("asdf");
+
     }
 }

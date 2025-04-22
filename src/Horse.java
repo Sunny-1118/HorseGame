@@ -20,7 +20,7 @@ public class Horse {
     public Horse(char a, String b, double c) {
         this.symbol = a;
         this.name = b;
-        this.confidence = c;
+        this.setConfidence(c);
     }
 
 

@@ -108,6 +108,9 @@ public class Race {
             //the probability that the horse will move forward depends on the confidence;
             if (Math.random() < theHorse.getConfidence()) {
                 theHorse.moveForward();
+                if(raceWonBy(theHorse)){
+                    theHorse.setConfidence(theHorse.getConfidence() + 0.1);
+                }
             }
 
             //the probability that the horse will fall is very small (max is 0.1)
@@ -115,6 +118,7 @@ public class Race {
             //so if you double the confidence, the probability that it will fall is *2
             if (Math.random() < (0.1 * theHorse.getConfidence() * theHorse.getConfidence())) {
                 theHorse.fall();
+                theHorse.setConfidence(theHorse.getConfidence() - 0.1);
             }
         }
     }

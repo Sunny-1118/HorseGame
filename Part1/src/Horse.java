@@ -47,6 +47,7 @@ public class Horse {
 
     public void goBackToStart() {
         this.distanceTravelled = 0;
+        this.isFallen = false;
     }
 
     public boolean hasFallen() {
@@ -67,10 +68,29 @@ public class Horse {
         this.symbol = newSymbol;
     }
 
-    public void move(){
+    public void move(String trackShape, String trackCondition) {
         if (!this.hasFallen()) {
-            //the probability that the horse will move forward depends on the confidence;
-            if (Math.random() < this.getConfidence()) {
+            double moveProbability = this.getConfidence();
+            double fallProbability = 0.1 * this.getConfidence() * this.getConfidence();
+
+            if (trackShape.equals("Figure-eight")) {
+                moveProbability *= 0.9;
+            } else if (trackShape.equals("Custom")) {
+                moveProbability *= 0.85;
+            }
+
+            if (trackCondition.equals("Muddy")) {
+                moveProbability *= 0.8;
+                fallProbability *= 1.2;
+            } else if (trackCondition.equals("Icy")) {
+                moveProbability *= 0.7;
+                fallProbability *= 1.5;
+                if (this.hasFallen()) {
+                    this.confidence = Math.round((this.confidence - 0.05) * 100.0) / 100.0;
+                }
+            }
+
+            if (Math.random() < moveProbability) {
                 this.moveForward();
                 if (this.raceWonBy()) {
                     this.confidence = Math.round((this.confidence + 0.1) * 100.0) / 100.0;
@@ -80,7 +100,7 @@ public class Horse {
             //the probability that the horse will fall is very small (max is 0.1)
             //but will also will depends exponentially on confidence
             //so if you double the confidence, the probability that it will fall is *2
-            if (Math.random() < (0.1 * this.getConfidence() * this.getConfidence())) {
+            if (Math.random() < fallProbability) {
                 this.fall();
                 this.confidence = Math.round((this.confidence - 0.1) * 100.0) / 100.0;
             }

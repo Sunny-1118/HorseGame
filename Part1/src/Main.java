@@ -7,7 +7,7 @@ public class Main {
         Horse horse3 = new Horse('@', "horse3", 0.9);
         Horse horse4 = new Horse('%', "horse4", 0.9);
         Horse horse5 = new Horse('*', "horse5", 0.9);
-        Race race = new Race(20);
+        Race race = new Race(20, 20);
 
         race.addHorse(horse1, 1);
         race.addHorse(horse2, 2);

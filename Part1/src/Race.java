@@ -13,6 +13,9 @@ public class Race {
     public static int raceLength;
     private Horse[] horseLanes;
     private List<Integer> laneIndexList;
+    private String trackShape;
+    private String trackCondition;
+    private int laneCount;
 
     /**
      * Constructor for objects of class Race
@@ -20,11 +23,12 @@ public class Race {
      *
      * @param distance the length of the racetrack (in metres/yards...)
      */
-    public Race(int distance) {
-        // initialise instance variables
+    public Race(int distance, int lanes) {
         raceLength = distance;
-        horseLanes = new Horse[1000];
+        horseLanes = new Horse[lanes];
         laneIndexList = new ArrayList<>();
+        trackShape = "Oval";
+        trackCondition = "Dry";
     }
 
     /**
@@ -34,8 +38,34 @@ public class Race {
      * @param laneNumber the lane that the horse will be added to
      */
     public void addHorse(Horse theHorse, int laneNumber) {
-        horseLanes[laneNumber] = theHorse;
-        laneIndexList.add(laneNumber);
+        if (laneNumber >= 1 && laneNumber <= horseLanes.length) {
+            horseLanes[laneNumber] = theHorse;
+            laneIndexList.add(laneNumber);
+        }
+    }
+
+    public void setTrackShape(String shape) {
+        if (shape.equals("Oval") || shape.equals("Figure-eight") || shape.equals("Custom")) {
+            this.trackShape = shape;
+        }
+    }
+
+    public String getTrackShape() {
+        return trackShape;
+    }
+
+    public void setTrackCondition(String condition) {
+        if (condition.equals("Dry") || condition.equals("Muddy") || condition.equals("Icy")) {
+            this.trackCondition = condition;
+        }
+    }
+
+    public String getTrackCondition() {
+        return trackCondition;
+    }
+
+    public int getLaneCount() {
+        return laneCount;
     }
 
     /**
@@ -48,42 +78,41 @@ public class Race {
         //declare a local variable to tell us when the race is finished
         boolean finished = false;
 
-        for(int i = 0; i < laneIndexList.size() ; i++){
+        for (int i = 0; i < laneIndexList.size(); i++) {
             int laneIndex = laneIndexList.get(i);
             Horse theHorse = horseLanes[laneIndex];
             theHorse.goBackToStart();
         }
 
-
         while (!finished) {
             //move each horse
-            for(int i = 0; i < laneIndexList.size() ; i++){
+            for (int i = 0; i < laneIndexList.size(); i++) {
                 int laneIndex = laneIndexList.get(i);
                 Horse theHorse = horseLanes[laneIndex];
-                theHorse.move();
+                theHorse.move(trackShape, trackCondition);
             }
 
             printRace();
 
-            for(int i = 0; i < laneIndexList.size() ; i++){
+            for (int i = 0; i < laneIndexList.size(); i++) {
                 int laneIndex = laneIndexList.get(i);
                 Horse theHorse = horseLanes[laneIndex];
-                if(theHorse.raceWonBy()){
+                if (theHorse.raceWonBy()) {
                     finished = true;
                     System.out.println("And the winner is " + theHorse.getName());
                 }
             }
 
             boolean allFallen = true;
-            for(int i = 0; i < laneIndexList.size(); i++){
+            for (int i = 0; i < laneIndexList.size(); i++) {
                 int laneIndex = laneIndexList.get(i);
                 Horse theHorse = horseLanes[laneIndex];
-                if(!theHorse.hasFallen()){
+                if (!theHorse.hasFallen()) {
                     allFallen = false;
                     break;
                 }
             }
-            if(allFallen){
+            if (allFallen) {
                 finished = true;
                 System.out.println("All horses have fallen! The race is over.");
             }
@@ -106,7 +135,7 @@ public class Race {
         multiplePrint('=', raceLength + 3); //top edge of track
         System.out.println();
 
-        for(int i = 0; i < laneIndexList.size() ; i++){
+        for (int i = 0; i < laneIndexList.size(); i++) {
             int laneIndex = laneIndexList.get(i);
             Horse theHorse = horseLanes[laneIndex];
             printLane(theHorse);

@@ -2,12 +2,12 @@
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        Horse horse1 = new Horse('#', "horse1", 0.3);
-        Horse horse2 = new Horse('!', "horse2", 0.3);
-        Horse horse3 = new Horse('@', "horse3", 0.3);
-        Horse horse4 = new Horse('%', "horse4", 0.3);
-        Horse horse5 = new Horse('*', "horse5", 0.3);
-        Race race = new Race(10);
+        Horse horse1 = new Horse('#', "horse1", 0.9);
+        Horse horse2 = new Horse('!', "horse2", 0.9);
+        Horse horse3 = new Horse('@', "horse3", 0.9);
+        Horse horse4 = new Horse('%', "horse4", 0.9);
+        Horse horse5 = new Horse('*', "horse5", 0.9);
+        Race race = new Race(20);
 
         race.addHorse(horse1, 1);
         race.addHorse(horse2, 2);

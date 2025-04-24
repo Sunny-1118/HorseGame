@@ -71,6 +71,20 @@ public class Race {
                 }
             }
 
+            boolean allFallen = true;
+            for(int i = 0; i < laneIndexList.size(); i++){
+                int laneIndex = laneIndexList.get(i);
+                if(!horseLanes[laneIndex].hasFallen()){
+                    allFallen = false;
+                    break;
+                }
+            }
+            if(allFallen){
+                finished = true;
+                System.out.println("All horses have fallen! The race is over.");
+            }
+
+
             //wait for 100 milliseconds
             try {
                 TimeUnit.MILLISECONDS.sleep(100);

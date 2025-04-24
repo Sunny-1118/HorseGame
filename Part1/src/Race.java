@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
  * @version 20250416
  */
 public class Race {
-    private final int raceLength;
+    public static int raceLength;
     private Horse lane1Horse;
     private Horse lane2Horse;
     private Horse lane3Horse;
@@ -62,24 +62,23 @@ public class Race {
 
         while (!finished) {
             //move each horse
-            moveHorse(lane1Horse);
-            moveHorse(lane2Horse);
-            moveHorse(lane3Horse);
+            lane1Horse.move();
+            lane2Horse.move();
+            lane3Horse.move();
 
             printRace();
 
 
-
             //if any of the three horses has won the race is finished
-            if (raceWonBy(lane1Horse)){
+            if (lane1Horse.raceWonBy()){
                 finished = true;
                 System.out.println("And the winner is " + lane1Horse.getName());
             }
-            if (raceWonBy(lane2Horse)){
+            if (lane2Horse.raceWonBy()){
                 finished = true;
                 System.out.println("And the winner is " + lane2Horse.getName());
             }
-            if (raceWonBy(lane3Horse)){
+            if (lane3Horse.raceWonBy()){
                 finished = true;
                 System.out.println("And the winner is " + lane3Horse.getName());
             }
@@ -92,45 +91,6 @@ public class Race {
             } catch (Exception e) {
             }
         }
-    }
-
-    /**
-     * Randomly make a horse move forward or fall depending
-     * on its confidence rating
-     * A fallen horse cannot move
-     *
-     * @param theHorse the horse to be moved
-     */
-    private void moveHorse(Horse theHorse) {
-        //if the horse has fallen it cannot move,
-        //so only run if it has not fallen
-        if (!theHorse.hasFallen()) {
-            //the probability that the horse will move forward depends on the confidence;
-            if (Math.random() < theHorse.getConfidence()) {
-                theHorse.moveForward();
-                if(raceWonBy(theHorse)){
-                    theHorse.setConfidence(theHorse.getConfidence() + 0.1);
-                }
-            }
-
-            //the probability that the horse will fall is very small (max is 0.1)
-            //but will also will depends exponentially on confidence
-            //so if you double the confidence, the probability that it will fall is *2
-            if (Math.random() < (0.1 * theHorse.getConfidence() * theHorse.getConfidence())) {
-                theHorse.fall();
-                theHorse.setConfidence(theHorse.getConfidence() - 0.1);
-            }
-        }
-    }
-
-    /**
-     * Determines if a horse has won the race
-     *
-     * @param theHorse The horse we are testing
-     * @return true if the horse has won, false otherwise.
-     */
-    private boolean raceWonBy(Horse theHorse) {
-        return theHorse.getDistanceTravelled() == raceLength;
     }
 
     /***

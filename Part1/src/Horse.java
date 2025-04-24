@@ -67,4 +67,28 @@ public class Horse {
         this.symbol = newSymbol;
     }
 
+    public void move(){
+        if (!this.hasFallen()) {
+            //the probability that the horse will move forward depends on the confidence;
+            if (Math.random() < this.getConfidence()) {
+                this.moveForward();
+                if (this.raceWonBy()) {
+                    this.confidence = this.confidence + 0.1;
+                }
+            }
+
+            //the probability that the horse will fall is very small (max is 0.1)
+            //but will also will depends exponentially on confidence
+            //so if you double the confidence, the probability that it will fall is *2
+            if (Math.random() < (0.1 * this.getConfidence() * this.getConfidence())) {
+                this.fall();
+                this.confidence = this.confidence - 0.1;
+            }
+        }
+    }
+
+    public boolean raceWonBy() {
+        return this.distanceTravelled == Race.raceLength;
+    }
+
 }

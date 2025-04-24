@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -9,9 +11,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class Race {
     public static int raceLength;
-    private Horse lane1Horse;
-    private Horse lane2Horse;
-    private Horse lane3Horse;
+    private Horse[] horseLanes;
+    private List<Integer> laneIndexList;
 
     /**
      * Constructor for objects of class Race
@@ -22,9 +23,8 @@ public class Race {
     public Race(int distance) {
         // initialise instance variables
         raceLength = distance;
-        lane1Horse = null;
-        lane2Horse = null;
-        lane3Horse = null;
+        horseLanes = new Horse[1000];
+        laneIndexList = new ArrayList<>();
     }
 
     /**
@@ -34,15 +34,8 @@ public class Race {
      * @param laneNumber the lane that the horse will be added to
      */
     public void addHorse(Horse theHorse, int laneNumber) {
-        if (laneNumber == 1) {
-            lane1Horse = theHorse;
-        } else if (laneNumber == 2) {
-            lane2Horse = theHorse;
-        } else if (laneNumber == 3) {
-            lane3Horse = theHorse;
-        } else {
-            System.out.println("Cannot add horse to lane " + laneNumber + " because there is no such lane");
-        }
+        horseLanes[laneNumber] = theHorse;
+        laneIndexList.add(laneNumber);
     }
 
     /**
@@ -55,35 +48,28 @@ public class Race {
         //declare a local variable to tell us when the race is finished
         boolean finished = false;
 
-        //reset all the lanes (all horses not fallen and back to 0).
-        lane1Horse.goBackToStart();
-        lane2Horse.goBackToStart();
-        lane3Horse.goBackToStart();
+        for(int i = 0; i < laneIndexList.size() ; i++){
+            int laneIndex = laneIndexList.get(i);
+            horseLanes[laneIndex].goBackToStart();
+        }
+
 
         while (!finished) {
             //move each horse
-            lane1Horse.move();
-            lane2Horse.move();
-            lane3Horse.move();
+            for(int i = 0; i < laneIndexList.size() ; i++){
+                int laneIndex = laneIndexList.get(i);
+                horseLanes[laneIndex].move();
+            }
 
             printRace();
 
-
-            //if any of the three horses has won the race is finished
-            if (lane1Horse.raceWonBy()){
-                finished = true;
-                System.out.println("And the winner is " + lane1Horse.getName());
+            for(int i = 0; i < laneIndexList.size() ; i++){
+                int laneIndex = laneIndexList.get(i);
+                if(horseLanes[laneIndex].raceWonBy()){
+                    finished = true;
+                    System.out.println("And the winner is " + horseLanes[laneIndex].getName());
+                }
             }
-            if (lane2Horse.raceWonBy()){
-                finished = true;
-                System.out.println("And the winner is " + lane2Horse.getName());
-            }
-            if (lane3Horse.raceWonBy()){
-                finished = true;
-                System.out.println("And the winner is " + lane3Horse.getName());
-            }
-
-
 
             //wait for 100 milliseconds
             try {
@@ -102,14 +88,11 @@ public class Race {
         multiplePrint('=', raceLength + 3); //top edge of track
         System.out.println();
 
-        printLane(lane1Horse);
-        System.out.println();
-
-        printLane(lane2Horse);
-        System.out.println();
-
-        printLane(lane3Horse);
-        System.out.println();
+        for(int i = 0; i < laneIndexList.size() ; i++){
+            int laneIndex = laneIndexList.get(i);
+            printLane(horseLanes[laneIndex]);
+            System.out.println();
+        }
 
         multiplePrint('=', raceLength + 3); //bottom edge of track
         System.out.println();

@@ -73,7 +73,7 @@ public class Horse {
             if (Math.random() < this.getConfidence()) {
                 this.moveForward();
                 if (this.raceWonBy()) {
-                    this.confidence = this.confidence + 0.1;
+                    this.confidence = Math.round((this.confidence + 0.1) * 100.0) / 100.0;
                 }
             }
 
@@ -82,7 +82,7 @@ public class Horse {
             //so if you double the confidence, the probability that it will fall is *2
             if (Math.random() < (0.1 * this.getConfidence() * this.getConfidence())) {
                 this.fall();
-                this.confidence = this.confidence - 0.1;
+                this.confidence = Math.round((this.confidence - 0.1) * 100.0) / 100.0;
             }
         }
     }

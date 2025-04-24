@@ -50,7 +50,8 @@ public class Race {
 
         for(int i = 0; i < laneIndexList.size() ; i++){
             int laneIndex = laneIndexList.get(i);
-            horseLanes[laneIndex].goBackToStart();
+            Horse theHorse = horseLanes[laneIndex];
+            theHorse.goBackToStart();
         }
 
 
@@ -58,23 +59,26 @@ public class Race {
             //move each horse
             for(int i = 0; i < laneIndexList.size() ; i++){
                 int laneIndex = laneIndexList.get(i);
-                horseLanes[laneIndex].move();
+                Horse theHorse = horseLanes[laneIndex];
+                theHorse.move();
             }
 
             printRace();
 
             for(int i = 0; i < laneIndexList.size() ; i++){
                 int laneIndex = laneIndexList.get(i);
-                if(horseLanes[laneIndex].raceWonBy()){
+                Horse theHorse = horseLanes[laneIndex];
+                if(theHorse.raceWonBy()){
                     finished = true;
-                    System.out.println("And the winner is " + horseLanes[laneIndex].getName());
+                    System.out.println("And the winner is " + theHorse.getName());
                 }
             }
 
             boolean allFallen = true;
             for(int i = 0; i < laneIndexList.size(); i++){
                 int laneIndex = laneIndexList.get(i);
-                if(!horseLanes[laneIndex].hasFallen()){
+                Horse theHorse = horseLanes[laneIndex];
+                if(!theHorse.hasFallen()){
                     allFallen = false;
                     break;
                 }
@@ -104,7 +108,8 @@ public class Race {
 
         for(int i = 0; i < laneIndexList.size() ; i++){
             int laneIndex = laneIndexList.get(i);
-            printLane(horseLanes[laneIndex]);
+            Horse theHorse = horseLanes[laneIndex];
+            printLane(theHorse);
             System.out.println();
         }
 

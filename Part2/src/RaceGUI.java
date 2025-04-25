@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.util.Map;
 import java.util.Random;
 import javax.swing.*;
 
@@ -181,13 +182,32 @@ public class RaceGUI {
             }
 
             race.setTrackPanel(this.raceTrackPanel);
+            race.prepareForRaceStart();
 
             addHorseButton.setEnabled(false);
             startRaceButton.setEnabled(false);
             saveTrackButton.setEnabled(false);
 
             System.out.println("Starting race thread...");
-            new Thread(() -> race.startRace()).start();
+
+            Thread raceThread = new Thread(() -> race.startRace());
+
+            Thread completionWaiterThread = new Thread(() -> {
+                try {
+                    raceThread.join();
+
+                    SwingUtilities.invokeLater(() -> {
+                        displayRaceResult();
+                    });
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    System.err.println("Completion waiter thread interrupted.");
+                    SwingUtilities.invokeLater(() -> setRaceControlsEnabled(true));
+                }
+            });
+
+            raceThread.start();
+            completionWaiterThread.start();
         });
         controlPanel.add(startRaceButton);
 
@@ -204,6 +224,66 @@ public class RaceGUI {
         addHorseButton.setEnabled(false);
         startRaceButton.setEnabled(false);
         saveTrackButton.setEnabled(true);
+    }
+
+    private void displayRaceResult() {
+        if (race == null) return;
+
+        StringBuilder summary = new StringBuilder("=== Race Results ===\n");
+        Map<Horse, Integer> results = race.getHorseResultSteps();
+        long delay = 100;
+
+        for (int laneNum : race.getLaneIndexList()) {
+            if(laneNum >= 1 && laneNum < race.getHorseLanes().length) {
+                Horse horse = race.getHorseLanes()[laneNum];
+                if (horse != null) {
+                    summary.append(String.format("Lane %d: %s ", laneNum, horse.getName()));
+
+                    if (results.containsKey(horse)) {
+                        int steps = results.get(horse);
+                        if (steps > 0) {
+                            double finishTime = (double) steps * delay / 1000.0;
+                            double avgSpeed = (finishTime > 0) ? (double) Race.raceLength / finishTime : 0;
+                            summary.append(String.format("[Finished: %.2fs | Avg Speed: %.2fm/s | Conf: %.1f]\n",
+                                finishTime, avgSpeed, horse.getConfidence()));
+                        } else {
+                            summary.append(String.format("[Fell at step %d | Conf: %.1f]\n",
+                                -steps, horse.getConfidence()));
+                        }
+                    } else {
+                        summary.append(String.format("[Did Not Finish | Conf: %.1f]\n", horse.getConfidence()));
+                    }
+                }
+            }
+        }
+        summary.append("===================\n");
+
+        String winnerInfo = race.getWinnerName();
+        boolean allFell = race.didAllFall();
+
+        if (winnerInfo != null) {
+            summary.append("Winner: ").append(winnerInfo).append("\n");
+        } else if (allFell) {
+            summary.append("All horses have fallen.\n");
+        } else if (race.isFinished()){
+            summary.append("Race finished without a clear winner or all falling.\n");
+        }
+
+        JTextArea resultArea = new JTextArea(summary.toString());
+        resultArea.setEditable(false);
+        resultArea.setCaretPosition(0);
+        JScrollPane scrollPane = new JScrollPane(resultArea);
+        scrollPane.setPreferredSize(new Dimension(450, 300));
+
+        JOptionPane.showMessageDialog(frame, scrollPane, "Race Result", JOptionPane.INFORMATION_MESSAGE);
+
+        setRaceControlsEnabled(true);
+    }
+
+    private void setRaceControlsEnabled(boolean enabled) {
+        addHorseButton.setEnabled(enabled);
+        startRaceButton.setEnabled(enabled);
+        saveTrackButton.setEnabled(enabled);
     }
 
     public static void main(String[] args) {

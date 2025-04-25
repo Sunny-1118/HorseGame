@@ -1,6 +1,9 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.swing.SwingUtilities;
 
 /**
  * A three-horse race, each horse running in its own lane for a given distance
@@ -11,14 +14,17 @@ import java.util.concurrent.TimeUnit;
 public class Race {
 
     public static int raceLength;
-
     private Horse[] horseLanes;
     private List<Integer> laneIndexList;
     private String trackShape;
     private String trackCondition;
     private int laneCount;
-
     private RaceTrackPanel trackPanel;
+    private Map<Horse, Integer> horseResultSteps;
+    private int currentStep;
+    private boolean raceFinished;
+    private boolean allFallen;
+    private String winnerName;
 
     /**
      * Constructor for objects of class Race Initially there are no horses in the lanes
@@ -28,10 +34,15 @@ public class Race {
     public Race(int distance, int lanes) {
         raceLength = distance;
         this.laneCount = lanes;
-        horseLanes = new Horse[lanes];
-        laneIndexList = new ArrayList<>();
-        trackShape = "Oval";
-        trackCondition = "Dry";
+        this.horseLanes = new Horse[lanes];
+        this.laneIndexList = new ArrayList<>();
+        this.trackShape = "Oval";
+        this.trackCondition = "Dry";
+        this.horseResultSteps = new HashMap<>();
+        this.currentStep = 0;
+        this.raceFinished = false;
+        this.allFallen = false;
+        this.winnerName = null;
     }
 
     /**
@@ -73,87 +84,93 @@ public class Race {
      * race is finished
      */
     public void startRace() {
-        boolean finished = false;
+        if (laneIndexList.isEmpty()) { return; }
+
+        this.raceFinished = false;
+        this.allFallen = false;
+        this.winnerName = null;
         boolean firstRepaintDone = false;
 
-        for (int i = 0; i < laneIndexList.size(); i++) {
-            int laneNumber = laneIndexList.get(i);
-            if (laneNumber >= 1 && laneNumber < horseLanes.length
-                && horseLanes[laneNumber] != null) {
-                horseLanes[laneNumber].goBackToStart();
-            }
-        }
+        while (!this.raceFinished) {
+            this.currentStep++;
 
-        while (!finished) {
             if (trackPanel != null && !firstRepaintDone) {
                 trackPanel.repaint();
                 firstRepaintDone = true;
             }
 
-            for (int i = 0; i < laneIndexList.size(); i++) {
-                int laneNumber = laneIndexList.get(i);
-                if (laneNumber >= 1 && laneNumber < horseLanes.length
-                    && horseLanes[laneNumber] != null) {
+            for (int laneNumber : laneIndexList) {
+                if (laneNumber >= 1 && laneNumber < horseLanes.length && horseLanes[laneNumber] != null) {
                     Horse theHorse = horseLanes[laneNumber];
-                    if (!theHorse.hasFallen()) {
+                    if (!theHorse.hasFallen()){
                         theHorse.move(trackShape, trackCondition);
                     }
                 }
             }
 
-            printRace();
-            if (trackPanel != null) {
-                trackPanel.repaint();
-            }
-            for (int i = 0; i < laneIndexList.size(); i++) {
-                int laneNumber = laneIndexList.get(i);
-                if (laneNumber >= 1 && laneNumber < horseLanes.length
-                    && horseLanes[laneNumber] != null) {
+            for (int laneNumber : laneIndexList) {
+                if (laneNumber >= 1 && laneNumber < horseLanes.length && horseLanes[laneNumber] != null) {
                     Horse theHorse = horseLanes[laneNumber];
-                    if (theHorse.getDistanceTravelled() >= Race.raceLength) {
-                        finished = true;
-                        System.out.println("And the winner is " + theHorse.getName());
-                        break;
+                    if (!horseResultSteps.containsKey(theHorse)) {
+                        if (theHorse.getDistanceTravelled() >= Race.raceLength) {
+                            horseResultSteps.put(theHorse, currentStep);
+                        } else if (theHorse.hasFallen()) {
+                            horseResultSteps.put(theHorse, -currentStep);
+                        }
                     }
                 }
             }
 
-            if (!finished) {
-                boolean allFallen = true;
+            printRace();
+            if (trackPanel != null) { trackPanel.repaint(); }
+
+            boolean winnerFound = false;
+            for (Map.Entry<Horse, Integer> entry : horseResultSteps.entrySet()) {
+                if (entry.getValue() > 0) {
+                    this.raceFinished = true;
+                    this.winnerName = entry.getKey().getName() + " (Lane " + findLaneNumber(entry.getKey()) + ")";
+                    System.out.println("And the winner is " + entry.getKey().getName());
+                    winnerFound = true;
+                    break;
+                }
+            }
+
+            if (!this.raceFinished) {
+                boolean checkAllFallen = true;
                 int activeCount = 0;
-                for (int i = 0; i < laneIndexList.size(); i++) {
-                    int laneNumber = laneIndexList.get(i);
-                    if (laneNumber >= 1 && laneNumber < horseLanes.length
-                        && horseLanes[laneNumber] != null) {
+                int resultCount = 0;
+                for(int laneNumber : laneIndexList){
+                    if (laneNumber >= 1 && laneNumber < horseLanes.length && horseLanes[laneNumber] != null) {
                         activeCount++;
-                        if (!horseLanes[laneNumber].hasFallen()) {
-                            allFallen = false;
+                        Horse h = horseLanes[laneNumber];
+                        if(horseResultSteps.containsKey(h)){
+                            resultCount++;
+                            if(horseResultSteps.get(h) > 0) {
+                                checkAllFallen = false;
+                                break;
+                            }
+                        } else {
+                            checkAllFallen = false;
                             break;
                         }
                     }
                 }
-                if (activeCount > 0 && allFallen) {
-                    finished = true;
+                if (activeCount > 0 && activeCount == resultCount && checkAllFallen) {
+                    this.raceFinished = true;
+                    this.allFallen = true;
                     System.out.println("All horses have fallen! The race is over.");
                 }
             }
 
-            if (!finished) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    finished = true;
-                } catch (Exception e) {
-                    finished = true;
-                }
+            if (!this.raceFinished) {
+                try { TimeUnit.MILLISECONDS.sleep(100); } catch (InterruptedException e) { Thread.currentThread().interrupt(); this.raceFinished = true; } catch (Exception e) { this.raceFinished = true;}
             }
+
         }
 
-        if (trackPanel != null) {
-            trackPanel.repaint();
-        }
+        if (trackPanel != null) { SwingUtilities.invokeLater(trackPanel::repaint); }
 
+        System.out.println("Race thread finished.");
     }
 
     /***
@@ -247,4 +264,42 @@ public class Race {
     public RaceTrackPanel getTrackPanel() {
         return trackPanel;
     }
+
+    public void prepareForRaceStart() {
+        this.raceFinished = false;
+        this.allFallen = false;
+        this.winnerName = null;
+        this.currentStep = 0;
+        this.horseResultSteps.clear();
+        for (int laneNumber : laneIndexList) {
+            if (laneNumber >= 1 && laneNumber < horseLanes.length && horseLanes[laneNumber] != null) {
+                horseLanes[laneNumber].goBackToStart();
+            }
+        }
+    }
+
+    public Map<Horse, Integer> getHorseResultSteps() {
+        return this.horseResultSteps;
+    }
+
+    private int findLaneNumber(Horse horseToFind) {
+        for(int laneNum : laneIndexList){
+            if(laneNum >= 1 && laneNum < horseLanes.length && horseLanes[laneNum] == horseToFind){
+                return laneNum;
+            }
+        }
+        return -1;
+    }
+
+    public boolean isFinished() {
+        return this.raceFinished;
+    }
+    public boolean didAllFall(){
+        return this.allFallen;
+    }
+    public String getWinnerName() {
+        return this.winnerName;
+    }
+
+    public void setRaceTrackPanel(RaceTrackPanel panel) { this.trackPanel = panel; }
 }

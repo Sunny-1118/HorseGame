@@ -25,6 +25,7 @@ public class Race {
      */
     public Race(int distance, int lanes) {
         raceLength = distance;
+        this.laneCount = lanes;
         horseLanes = new Horse[lanes];
         laneIndexList = new ArrayList<>();
         trackShape = "Oval";
@@ -52,6 +53,9 @@ public class Race {
 
     public String getTrackShape() {
         return trackShape;
+    }
+    public int getAddedHorseCount() {
+        return this.laneIndexList.size();
     }
 
     public void setTrackCondition(String condition) {
@@ -117,7 +121,6 @@ public class Race {
                 System.out.println("All horses have fallen! The race is over.");
             }
 
-
             //wait for 100 milliseconds
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
@@ -181,7 +184,6 @@ public class Race {
         System.out.print(theHorse.getName());
         System.out.print("(Current confidence: " + theHorse.getConfidence() + ")");
     }
-
 
     /***
      * print a character a given number of times.

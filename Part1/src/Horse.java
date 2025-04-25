@@ -1,4 +1,3 @@
-
 /**
  * Write a description of class Horse here.
  *
@@ -12,7 +11,10 @@ public class Horse {
     private int distanceTravelled;
     private char symbol;
     private boolean isFallen;
-    //Constructor of class Horse
+    private String breed;
+    private String coatColor;
+    private String saddle;
+    private String horseshoe;
 
     /**
      * Constructor for objects of class Horse
@@ -21,7 +23,22 @@ public class Horse {
         this.symbol = a;
         this.name = b;
         this.setConfidence(c);
+        this.breed = "";
+        this.coatColor = "";
+        this.saddle = "";
+        this.horseshoe = "";
     }
+
+    public Horse(char a, String b, double c, String breed, String coatColor, String saddle, String horseshoe) {
+        this.symbol = a;
+        this.name = b;
+        this.setConfidence(c);
+        this.breed = breed;
+        this.coatColor = coatColor;
+        this.saddle = saddle;
+        this.horseshoe = horseshoe;
+    }
+
 
 
     //Other methods of class Horse
@@ -68,17 +85,35 @@ public class Horse {
         this.symbol = newSymbol;
     }
 
+    public String getBreed() {
+        return breed;
+    }
+
+    public String getCoatColor() {
+        return coatColor;
+    }
+
+    public String getSaddle() {
+        return saddle;
+    }
+
+    public String getHorseshoe() {
+        return horseshoe;
+    }
+
     public void move(String trackShape, String trackCondition) {
         if (!this.hasFallen()) {
             double moveProbability = this.getConfidence();
             double fallProbability = 0.1 * this.getConfidence() * this.getConfidence();
 
+            // Track shape effects
             if (trackShape.equals("Figure-eight")) {
                 moveProbability *= 0.9;
             } else if (trackShape.equals("Custom")) {
                 moveProbability *= 0.85;
             }
 
+            // Track condition effects
             if (trackCondition.equals("Muddy")) {
                 moveProbability *= 0.8;
                 fallProbability *= 1.2;
@@ -88,6 +123,25 @@ public class Horse {
                 if (this.hasFallen()) {
                     this.confidence = Math.round((this.confidence - 0.05) * 100.0) / 100.0;
                 }
+            }
+
+            // Breed effects
+            if (breed.equals("Thoroughbred")) {
+                moveProbability *= 1.1; // Faster
+                fallProbability *= 1.1; // Slightly riskier
+            } else if (breed.equals("Arabian")) {
+                moveProbability *= 0.95; // Slightly slower
+                fallProbability *= 0.9; // More stable
+            } else if (breed.equals("Quarter Horse")) {
+                moveProbability *= 1.05; // Balanced speed
+            }
+
+            // Equipment effects
+            if (saddle.equals("Light Saddle")) {
+                moveProbability *= 1.05; // Slightly faster
+            }
+            if (horseshoe.equals("Light Horseshoe")) {
+                fallProbability *= 0.95; // Slightly safer
             }
 
             if (Math.random() < moveProbability) {
@@ -110,5 +164,4 @@ public class Horse {
     public boolean raceWonBy() {
         return this.distanceTravelled == Race.raceLength;
     }
-
 }

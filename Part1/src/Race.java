@@ -3,23 +3,25 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A three-horse race, each horse running in its own lane
- * for a given distance
+ * A three-horse race, each horse running in its own lane for a given distance
  *
  * @author sunny_1118
  * @version 20250416
  */
 public class Race {
+
     public static int raceLength;
+
     private Horse[] horseLanes;
     private List<Integer> laneIndexList;
     private String trackShape;
     private String trackCondition;
     private int laneCount;
 
+    private RaceTrackPanel trackPanel;
+
     /**
-     * Constructor for objects of class Race
-     * Initially there are no horses in the lanes
+     * Constructor for objects of class Race Initially there are no horses in the lanes
      *
      * @param distance the length of the racetrack (in metres/yards...)
      */
@@ -51,9 +53,6 @@ public class Race {
         }
     }
 
-    public String getTrackShape() {
-        return trackShape;
-    }
     public int getAddedHorseCount() {
         return this.laneIndexList.size();
     }
@@ -64,69 +63,97 @@ public class Race {
         }
     }
 
-    public String getTrackCondition() {
-        return trackCondition;
-    }
 
     public int getLaneCount() {
         return laneCount;
     }
 
     /**
-     * Start the race
-     * The horse are brought to the start and
-     * then repeatedly moved forward until the
+     * Start the race The horse are brought to the start and then repeatedly moved forward until the
      * race is finished
      */
     public void startRace() {
-        //declare a local variable to tell us when the race is finished
         boolean finished = false;
+        boolean firstRepaintDone = false;
 
         for (int i = 0; i < laneIndexList.size(); i++) {
-            int laneIndex = laneIndexList.get(i);
-            Horse theHorse = horseLanes[laneIndex];
-            theHorse.goBackToStart();
+            int laneNumber = laneIndexList.get(i);
+            if (laneNumber >= 1 && laneNumber < horseLanes.length
+                && horseLanes[laneNumber] != null) {
+                horseLanes[laneNumber].goBackToStart();
+            }
         }
 
         while (!finished) {
-            //move each horse
+            if (trackPanel != null && !firstRepaintDone) {
+                trackPanel.repaint();
+                firstRepaintDone = true;
+            }
+
             for (int i = 0; i < laneIndexList.size(); i++) {
-                int laneIndex = laneIndexList.get(i);
-                Horse theHorse = horseLanes[laneIndex];
-                theHorse.move(trackShape, trackCondition);
+                int laneNumber = laneIndexList.get(i);
+                if (laneNumber >= 1 && laneNumber < horseLanes.length
+                    && horseLanes[laneNumber] != null) {
+                    Horse theHorse = horseLanes[laneNumber];
+                    if (!theHorse.hasFallen()) {
+                        theHorse.move(trackShape, trackCondition);
+                    }
+                }
             }
 
             printRace();
-
+            if (trackPanel != null) {
+                trackPanel.repaint();
+            }
             for (int i = 0; i < laneIndexList.size(); i++) {
-                int laneIndex = laneIndexList.get(i);
-                Horse theHorse = horseLanes[laneIndex];
-                if (theHorse.raceWonBy()) {
+                int laneNumber = laneIndexList.get(i);
+                if (laneNumber >= 1 && laneNumber < horseLanes.length
+                    && horseLanes[laneNumber] != null) {
+                    Horse theHorse = horseLanes[laneNumber];
+                    if (theHorse.getDistanceTravelled() >= Race.raceLength) {
+                        finished = true;
+                        System.out.println("And the winner is " + theHorse.getName());
+                        break;
+                    }
+                }
+            }
+
+            if (!finished) {
+                boolean allFallen = true;
+                int activeCount = 0;
+                for (int i = 0; i < laneIndexList.size(); i++) {
+                    int laneNumber = laneIndexList.get(i);
+                    if (laneNumber >= 1 && laneNumber < horseLanes.length
+                        && horseLanes[laneNumber] != null) {
+                        activeCount++;
+                        if (!horseLanes[laneNumber].hasFallen()) {
+                            allFallen = false;
+                            break;
+                        }
+                    }
+                }
+                if (activeCount > 0 && allFallen) {
                     finished = true;
-                    System.out.println("And the winner is " + theHorse.getName());
+                    System.out.println("All horses have fallen! The race is over.");
                 }
             }
 
-            boolean allFallen = true;
-            for (int i = 0; i < laneIndexList.size(); i++) {
-                int laneIndex = laneIndexList.get(i);
-                Horse theHorse = horseLanes[laneIndex];
-                if (!theHorse.hasFallen()) {
-                    allFallen = false;
-                    break;
+            if (!finished) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    finished = true;
+                } catch (Exception e) {
+                    finished = true;
                 }
-            }
-            if (allFallen) {
-                finished = true;
-                System.out.println("All horses have fallen! The race is over.");
-            }
-
-            //wait for 100 milliseconds
-            try {
-                TimeUnit.MILLISECONDS.sleep(100);
-            } catch (Exception e) {
             }
         }
+
+        if (trackPanel != null) {
+            trackPanel.repaint();
+        }
+
     }
 
     /***
@@ -150,10 +177,8 @@ public class Race {
     }
 
     /**
-     * print a horse's lane during the race
-     * for example
-     * |           X                      |
-     * to show how far the horse has run
+     * print a horse's lane during the race for example |           X                      | to show
+     * how far the horse has run
      */
     private void printLane(Horse theHorse) {
         //calculate how many spaces are needed before
@@ -198,4 +223,18 @@ public class Race {
             i = i + 1;
         }
     }
+
+    public Horse[] getHorseLanes() {
+        return horseLanes;
+    }
+
+    public List<Integer> getLaneIndexList() {
+        return laneIndexList;
+    }
+
+    public void setTrackPanel(RaceTrackPanel trackPanel) {
+        this.trackPanel = trackPanel;
+    }
+
+
 }

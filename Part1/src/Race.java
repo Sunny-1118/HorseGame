@@ -236,5 +236,15 @@ public class Race {
         this.trackPanel = trackPanel;
     }
 
+    public String getTrackShape() {
+        return trackShape;
+    }
 
+    public String getTrackCondition() {
+        return trackCondition;
+    }
+
+    public RaceTrackPanel getTrackPanel() {
+        return trackPanel;
+    }
 }
